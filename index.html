@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAIHA Top-Center Live Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@800;900&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent !important;
+            overflow: hidden;
+            font-family: 'Cairo', sans-serif;
+            width: 100vw;
+            height: 100vh;
+            /* التموضع في الأعلى ومن المنتصف */
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 24px;
+        }
+
+        /* حاوية الأوفرلاي الرئيسية */
+        .overlay-stage {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 620px;
+            height: 120px;
+        }
+
+        /* كانفاس خطوط النيون المتحركة الحية بسرعة أبطأ وهادئة */
+        #liveNeonCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* مجموعة العملة + النصوص الحرة */
+        .coin-text-wrapper {
+            position: relative;
+            z-index: 6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: gentleFloat 5s ease-in-out infinite;
+        }
+
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+
+        /* العملة الذهبية مع كلمة LYD باللون الأسود */
+        .gold-coin {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff5a8 0%, #ffd700 45%, #d98a00 85%, #8c5200 100%);
+            border: 3px solid #fff8cc;
+            box-shadow:
+                0 0 18px rgba(255, 215, 0, 0.8),
+                0 0 28px rgba(255, 0, 0, 0.55),
+                inset 0 0 10px rgba(255, 255, 255, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+            flex-shrink: 0;
+            overflow: hidden;
+            animation: coinAlive 4.5s ease-in-out infinite alternate;
+        }
+
+        .gold-coin::before {
+            content: '';
+            position: absolute;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 1.5px dashed rgba(0, 0, 0, 0.45);
+        }
+
+        /* لمعة تمر فوق العملة ببطء مريح */
+        .gold-coin::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -120%;
+            width: 55%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+            transform: skewX(-25deg);
+            animation: coinShine 7s ease-in-out infinite;
+        }
+
+        @keyframes coinShine {
+            0%, 68% { left: -120%; }
+            90%, 100% { left: 160%; }
+        }
+
+        @keyframes coinAlive {
+            0% {
+                transform: scale(1) rotate(-2deg);
+            }
+            100% {
+                transform: scale(1.04) rotate(2deg);
+            }
+        }
+
+        .coin-lyd {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 21px;
+            font-weight: 900;
+            color: #000000;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+            z-index: 3;
+        }
+
+        /* منطقة خروج النصوص الحرة بدون أي إضاءة وردية أو إطار أو مربع */
+        .free-text-track {
+            position: relative;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            overflow: visible;
+            margin-right: 16px;
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+        }
+
+        /* الكلمات الحرة المتحركة بهدوء مع توهج أحمر وأبيض نقي بدون خلفية شفافة وردية */
+        .free-phrase {
+            font-size: 23px;
+            font-weight: 900;
+            white-space: nowrap;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            text-shadow:
+                0 2px 4px rgba(0, 0, 0, 0.95),
+                0 0 6px rgba(255, 0, 0, 0.7),
+                0 0 12px rgba(255, 0, 0, 0.45);
+            animation: gentleTextMotion 4.5s ease-in-out infinite alternate;
+        }
+
+        .free-phrase .red-word {
+            color: #ff1e1e;
+            text-shadow:
+                0 2px 4px rgba(0, 0, 0, 0.95),
+                0 0 8px rgba(255, 0, 0, 0.8),
+                0 0 14px rgba(255, 0, 0, 0.5);
+        }
+
+        /* حركة لطيفة جداً للكلمات وهي في مكانها */
+        @keyframes gentleTextMotion {
+            0% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-2px) translateX(-3px); }
+            100% { transform: translateY(1px) translateX(2px); }
+        }
+
+        /* دخول مفاجئ من العملة واختفاء تدريجي عائد إليها بسرعة هادئة */
+        .pop-slide-enter {
+            animation: popOutFromCoin 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .fade-slide-exit {
+            animation: fadeBackToCoin 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes popOutFromCoin {
+            0% {
+                opacity: 0;
+                transform: translateX(65px) scale(0.75);
+            }
+            75% {
+                opacity: 1;
+                transform: translateX(-2px) scale(1.01);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0px) scale(1);
+            }
+        }
+
+        @keyframes fadeBackToCoin {
+            0% {
+                opacity: 1;
+                transform: translateX(0px) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(70px) scale(0.75);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay-stage">
+        <!-- خطوط النيون المتحركة الحية بسرعة أبطأ -->
+        <canvas id="liveNeonCanvas"></canvas>
+
+        <div class="coin-text-wrapper">
+            <!-- العملة الذهبية -->
+            <div class="gold-coin">
+                <span class="coin-lyd">LYD</span>
+            </div>
+
+            <!-- الكلمات الحرة المنبثقة بدون أي إضاءة وردية أو إطار -->
+            <div class="free-text-track">
+                <div id="dynamicPhrase" class="free-phrase"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // التبديل التلقائي بين العبارتين المطلوبتين بسرعة أهدأ وأبطأ
+        const phrases = [
+            'رابط <span class="red-word">الدعم الليبي</span> في البايو',
+            'رابط <span class="red-word">التواصل أيضاً</span> في البايو'
+        ];
+
+        const phraseEl = document.getElementById('dynamicPhrase');
+        let currentIndex = 0;
+
+        function runPhraseCycle() {
+            phraseEl.innerHTML = phrases[currentIndex];
+
+            phraseEl.classList.remove('fade-slide-exit');
+            void phraseEl.offsetWidth;
+            phraseEl.classList.add('pop-slide-enter');
+
+            setTimeout(() => {
+                phraseEl.classList.remove('pop-slide-enter');
+                phraseEl.classList.add('fade-slide-exit');
+            }, 5200);
+
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % phrases.length;
+                runPhraseCycle();
+            }, 7200);
+        }
+
+        runPhraseCycle();
+
+        // أنيميشن النيون الحي المتحرك بسرعة أبطأ بدرجات مريحة
+        const canvas = document.getElementById('liveNeonCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const neonColors = ['#ff0000', '#ff2a2a', '#ffffff', '#ffd700'];
+
+        class LiveStreak {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.speedX = (Math.random() - 0.5) * 1.1;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.color = neonColors[Math.floor(Math.random() * neonColors.length)];
+                this.size = Math.random() * 1.8 + 0.7;
+                this.life = 0;
+                this.maxLife = Math.random() * 110 + 80;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life++;
+                if (this.life >= this.maxLife || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+            draw() {
+                const alpha = Math.sin((this.life / this.maxLife) * Math.PI) * 0.75;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.strokeStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 10;
+                ctx.lineWidth = this.size;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - this.speedX * 7, this.y - this.speedY * 7);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        const streaks = Array.from({ length: 22 }, () => new LiveStreak());
+
+        function animateNeon() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            streaks.forEach(s => {
+                s.update();
+                s.draw();
+            });
+            requestAnimationFrame(animateNeon);
+        }
+
+        animateNeon();
+    </script>
+</body>
+</html>
